@@ -10,6 +10,17 @@ import Foundation
 private var flag = true
 private var myCreditManager: [String:[String:String]] = [String:[String:String]]()
 
+enum InputError: Error {
+    case wrongInput
+    case duplicated(name: String)
+    
+    var debugDescription: String {
+        switch self {
+        case .wrongInput: return "잘못된 입력입니다. 다시 확인해주세요."
+        case .duplicated(let name): return "\(name)은 이미 존재하는 학생입니다. 추가하지 않습니다."
+        }
+    }
+}
 private func isWrongInput(input: String) -> Bool { // 숫자, 영문만 가능
     let result = input.filter{ !(("0"..."9").contains($0) || ("a"..."z").contains($0) || ("A"..."Z").contains($0))}
     if result != "" {
@@ -43,9 +54,9 @@ private func gradeToScore(grade: String) -> Double {
     }
 }
 
-private func addStudent(name: String){
+private func addStudent(name: String) throws{
     if myCreditManager[name] != nil {
-        print("\(name)은 이미 존재하는 학생입니다. 추가하지 않습니다.")
+        throw InputError.duplicated(name: name)
     }
     else {
         myCreditManager[name] = [String:String]()
@@ -121,7 +132,7 @@ while(flag) {
         print("추가할 학생의 이름을 입력해주세요")
         let inputName = readLine()!
         if !isWrongInput(input: inputName) { break }
-        addStudent(name: inputName)
+        do { try addStudent(name: inputName)} catch { print(error)}
         break
     case "2":
         print("삭제할 학생의 이름을 입력해주세요")
