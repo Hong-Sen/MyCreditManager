@@ -10,14 +10,16 @@ import Foundation
 private var flag = true
 private var myCreditManager: [String:[String:String]] = [String:[String:String]]()
 
-enum InputError: Error {
+enum InputError: Error, CustomDebugStringConvertible {
     case wrongInput
     case duplicated(name: String)
+    case noWhere(name: String)
     
     var debugDescription: String {
         switch self {
         case .wrongInput: return "잘못된 입력입니다. 다시 확인해주세요."
         case .duplicated(let name): return "\(name)은 이미 존재하는 학생입니다. 추가하지 않습니다."
+        case .noWhere(let name): return "\(name) 학생을 찾지 못했습니다."
         }
     }
 }
@@ -54,7 +56,7 @@ private func gradeToScore(grade: String) -> Double {
     }
 }
 
-private func addStudent(name: String) throws{
+private func addStudent(name: String) throws {
     if myCreditManager[name] != nil {
         throw InputError.duplicated(name: name)
     }
@@ -64,13 +66,13 @@ private func addStudent(name: String) throws{
     }
 }
 
-private func removeStudent(name: String) {
+private func removeStudent(name: String) throws {
     if myCreditManager[name] != nil {
         myCreditManager[name] = nil
         print("\(name) 학생을 삭제하였습니다.")
     }
     else {
-        print("\(name) 학생을 찾지 못했습니다.")
+        throw InputError.noWhere(name: name)
     }
 }
 
@@ -138,7 +140,7 @@ while(flag) {
         print("삭제할 학생의 이름을 입력해주세요")
         let inputName = readLine()!
         if !isWrongInput(input: inputName) { break }
-        removeStudent(name: inputName)
+        do { try removeStudent(name: inputName)} catch { print(error)}
         break
     case "3":
         print("성적을 추가할 학생의 이름, 과목이름, 성적(A+,A,F등)을 띄어쓰기로 구분하여 차례로 작성해주세요.")
